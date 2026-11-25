@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semantic model AI-readiness check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Spectral:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #14232b; --ink-2: #4b5e66; --paper: #f2f5f4; --panel: #ffffff; --line: #d2dad8;
+  --accent: #1f5f6b; --accent-ink: #ffffff; --good: #1c7c4d; --warn: #9a5b06; --bad: #b3261e;
+  --track: #e3e9e7; --wash-bad: #fbeeed; --serif: 'Spectral', Georgia, 'Times New Roman', serif;
+  --sans: 'Public Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #e5eeee; --ink-2: #9db0b5; --paper: #0e191e; --panel: #15242b; --line: #29404a;
+    --accent: #6cc3d1; --accent-ink: #0e191e; --good: #5fcf95; --warn: #e5a650; --bad: #ff8078;
+    --track: #223640; --wash-bad: #2a1a1c; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ink: #e5eeee; --ink-2: #9db0b5; --paper: #0e191e; --panel: #15242b; --line: #29404a;
+  --accent: #6cc3d1; --accent-ink: #0e191e; --good: #5fcf95; --warn: #e5a650; --bad: #ff8078;
+  --track: #223640; --wash-bad: #2a1a1c; color-scheme: dark;
+}
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; min-height: 100%; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 880px; margin: 0 auto; padding: 40px 20px 64px; }
+h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(28px, 5vw, 40px); line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.01em; }
+.lede { margin: 0 0 28px; max-width: 60ch; color: var(--ink-2); font-size: 18px; }
+.drop { border: 2px dashed var(--line); border-radius: 12px; padding: 28px 24px; background: var(--panel); transition: border-color .15s, background .15s; }
+.drop.over { border-color: var(--accent); background: var(--track); }
+.drop p { margin: 0 0 16px; font-size: 18px; font-weight: 500; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+button { font: inherit; cursor: pointer; border-radius: 8px; padding: 10px 16px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+button:hover { filter: brightness(0.96); }
+button:focus-visible, summary:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.fine { margin: 14px 0 0; font-size: 14px; color: var(--ink-2); }
+details { margin-top: 18px; }
+summary { cursor: pointer; font-weight: 500; }
+details ol { margin: 10px 0 0; padding-left: 22px; color: var(--ink-2); }
+details li { margin-bottom: 6px; }
+#msg { margin: 16px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--wash-bad); border-left: 4px solid var(--bad); }
+.cert { margin-top: 36px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 28px 24px; }
+.cert:focus { outline: none; }
+.verdict { font-family: var(--serif); font-weight: 600; font-size: clamp(30px, 6vw, 46px); line-height: 1.1; margin: 0 0 4px; }
+.verdict.ok { color: var(--good); } .verdict.warn { color: var(--warn); } .verdict.bad { color: var(--bad); }
+.score { margin: 0 0 20px; color: var(--ink-2); }
+.score .n { font-weight: 600; color: var(--ink); font-size: 20px; }
+.gauge { position: relative; height: 14px; border-radius: 7px; background: var(--track); margin: 8px 0 30px; }
+.gauge .fill { position: absolute; inset: 0 auto 0 0; border-radius: 7px; background: var(--ink); }
+.gauge .tick { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink-2); }
+.gauge .tick span { position: absolute; top: 24px; transform: translateX(-50%); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.gates { border: 1px solid var(--bad); background: var(--wash-bad); border-radius: 8px; padding: 14px 16px; margin-bottom: 22px; }
+.gates strong { display: block; margin-bottom: 4px; color: var(--bad); }
+.gates ul { margin: 6px 0 0; padding-left: 20px; }
+h3 { font-size: 15px; font-weight: 600; margin: 26px 0 10px; }
+.areas { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.areas li { display: grid; grid-template-columns: minmax(130px, 1.1fr) 3fr 56px; gap: 12px; align-items: center; font-size: 15px; }
+.areas .bar { height: 10px; border-radius: 5px; background: var(--track); overflow: hidden; }
+.areas .bar i { display: block; height: 100%; border-radius: 5px; }
+.areas .pts { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.counts { margin: 18px 0 0; color: var(--ink-2); font-size: 14px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.filters button { padding: 6px 12px; font-size: 14px; }
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
+th { text-align: left; font-weight: 600; color: var(--ink-2); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+td.sev { font-weight: 600; white-space: nowrap; }
+td.sev.High { color: var(--bad); } td.sev.Medium { color: var(--warn); } td.sev.Low, td.sev.Info { color: var(--ink-2); }
+textarea { width: 100%; min-height: 180px; margin-top: 10px; padding: 10px; font: 13px/1.5 ui-monospace, Consolas, monospace; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; box-sizing: border-box; }
+.limits { margin-top: 26px; font-size: 14px; color: var(--ink-2); max-width: 70ch; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 560px) { .areas li { grid-template-columns: 1fr 56px; } .areas .bar { grid-column: 1 / -1; grid-row: 2; } .cert { padding: 22px 16px; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Is your semantic model ready for AI?</h1>
+  <p class="lede">Drop a Power BI project folder or a model.bim file and get a verdict, a score out of 100, and a ranked list of fixes.</p>
+
+  <section class="drop" id="drop" aria-label="Upload a model">
+    <p>Drop your model files here</p>
+    <div class="row">
+      <button type="button" class="primary" id="pickFolder">Choose project folder</button>
+      <button type="button" id="pickFiles">Choose model.bim or .tmdl files</button>
+      <button type="button" id="pickPbix">I have a .pbix file</button>
+      <button type="button" id="sample">Try a sample model</button>
+    </div>
+    <p class="fine">The check runs in your browser. Nothing is uploaded.</p>
+    <input class="visually-hidden" type="file" id="folderIn" webkitdirectory multiple tabindex="-1" aria-hidden="true">
+    <input class="visually-hidden" type="file" id="filesIn" multiple accept=".bim,.tmdl,.json" tabindex="-1" aria-hidden="true">
+    <input class="visually-hidden" type="file" id="pbixIn" accept=".pbix" tabindex="-1" aria-hidden="true">
+    <details>
+      <summary>How do I get these files?</summary>
+      <ol>
+        <li>In Power BI Desktop, open the model and choose File, then Save as, then Power BI Project (.pbip). Upload the folder that ends in .SemanticModel.</li>
+        <li>Or in Tabular Editor, use File, then Save to Folder, or save the model as model.bim.</li>
+        <li>A .pbix file can&rsquo;t be opened in a browser. Upload it in Claude chat to get the same rating there.</li>
+      </ol>
+    </details>
+    <div id="msg" role="alert" hidden></div>
+  </section>
+
+  <div id="result" aria-live="polite"></div>
+</main>
+
+<script>
+(function (root) {
+  var AUTO = /^(LocalDateTable|DateTableTemplate)/;
+  var HELPER = /^(index|sorter|sort|rownum|row ?number|id|key)$|(^|[ _])(fk|sk|pk)([ _]|$)|_id$|^column\s*-|\bcopy\b|(^|[ _])helper/i;
+  var BADPFX = /^(dim|fact|fct|stg|tmp|temp|vw)[_ ]/i;
+
+  function blank(x) { return x == null || String(x).trim() === ''; }
+  function lev(a, b) {
+    var m = a.length, n = b.length, p = [], i, j;
+    for (j = 0; j <= n; j++) p[j] = j;
+    for (i = 1; i <= m; i++) {
+      var prev = p[0]; p[0] = i;
+      for (j = 1; j <= n; j++) {
+        var t = p[j];
+        p[j] = Math.min(p[j] + 1, p[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+        prev = t;
+      }
+    }
+    return p[n];
+  }
+  function sim(a, b) { a = a.toLowerCase(); b = b.toLowerCase(); var mx = Math.max(a.length, b.length); return mx ? 1 - lev(a, b) / mx : 1; }
+
+  /* ---------- parsers ---------- */
+  function fromBim(j) {
+    var m = j.model || j;
+    var model = { tables: [], rels: [], roles: (m.roles || []).length, authoredSyn: false, aiArtifacts: false };
+    (m.tables || []).forEach(function (t) {
+      model.tables.push({
+        name: t.name, description: t.description, hidden: !!t.isHidden, dataCategory: t.dataCategory,
+        columns: (t.columns || []).map(function (c) { return { name: c.name, description: Array.isArray(c.description) ? c.description.join(' ') : c.description, hidden: !!c.isHidden }; }),
+        measures: (t.measures || []).map(function (x) { return { name: x.name, description: Array.isArray(x.description) ? x.description.join(' ') : x.description, displayFolder: x.displayFolder }; })
+      });
+    });
+    (m.relationships || []).forEach(function (r) {
+      model.rels.push({ from: r.fromTable, to: r.toTable, both: /both/i.test(r.crossFilteringBehavior || ''), mm: r.fromCardinality === 'many' && r.toCardinality === 'many', active: r.isActive !== false });
+    });
+    (m.cultures || []).forEach(function (c) { if (/Authored/.test(JSON.stringify(c.linguisticMetadata || ''))) model.authoredSyn = true; });
+    return model;
+  }
+
+  function indentOf(l) { var n = 0, i = 0; while (i < l.length) { if (l[i] === '\t') { n++; i++; } else if (l.substr(i, 4) === '    ') { n++; i += 4; } else break; } return n; }
+  function nameOf(rest) {
+    rest = rest.trim();
+    if (rest[0] === "'") { var i = 1, s = ''; while (i < rest.length) { if (rest[i] === "'" && rest[i + 1] === "'") { s += "'"; i += 2; } else if (rest[i] === "'") break; else { s += rest[i]; i++; } } return s; }
+    return rest.split(/[\s=:]/)[0];
+  }
+  function tableOfRef(ref) {
+    ref = (ref || '').trim();
+    if (ref[0] === "'") return nameOf(ref);
+    return ref.split('.')[0];
+  }
+
+  function fromTmdl(files) {
+    var model = { tables: [], rels: [], roles: 0, authoredSyn: false, aiArtifacts: false };
+    files.forEach(function (f) {
+      if (/copilot|verified|ai[-_ ]?instruction/i.test(f.path)) model.aiArtifacts = true;
+      if (/cultures?[\/\\]/i.test(f.path) || /linguisticMetadata/.test(f.text)) { if (/Authored/.test(f.text)) model.authoredSyn = true; }
+      var lines = f.text.replace(/\r/g, '').split('\n');
+      var doc = [], table = null, ctx = null, rel = null;
+      lines.forEach(function (raw) {
+        if (!raw.trim()) return;
+        var ind = indentOf(raw), t = raw.trim();
+        if (t.indexOf('///') === 0) { doc.push(t.slice(3).trim()); return; }
+        if (t.indexOf('//') === 0) return;
+        var desc = doc.join(' ').trim(); doc = [];
+        if (ind === 0) {
+          table = null; ctx = null; rel = null;
+          if (/^table\s/.test(t)) { table = { name: nameOf(t.slice(6)), description: desc, hidden: false, columns: [], measures: [] }; model.tables.push(table); ctx = { kind: 'table', o: table }; }
+          else if (/^relationship\s/.test(t)) { rel = { from: '', to: '', both: false, mm: false, active: true, fc: '', tc: '' }; model.rels.push(rel); }
+          else if (/^role\s/.test(t)) model.roles++;
+          return;
+        }
+        if (rel) {
+          var kv = t.match(/^(\w+)\s*:\s*(.*)$/); if (!kv) return;
+          if (kv[1] === 'fromColumn') rel.from = tableOfRef(kv[2]);
+          else if (kv[1] === 'toColumn') rel.to = tableOfRef(kv[2]);
+          else if (kv[1] === 'crossFilteringBehavior') rel.both = /both/i.test(kv[2]);
+          else if (kv[1] === 'isActive') rel.active = !/false/i.test(kv[2]);
+          else if (kv[1] === 'fromCardinality') rel.fc = kv[2].trim();
+          else if (kv[1] === 'toCardinality') rel.tc = kv[2].trim();
+          rel.mm = rel.fc === 'many' && rel.tc === 'many';
+          return;
+        }
+        if (!table) return;
+        if (ind === 1) {
+          if (/^column\s/.test(t)) { var c = { name: nameOf(t.slice(7)), description: desc, hidden: false }; table.columns.push(c); ctx = { kind: 'col', o: c }; }
+          else if (/^measure\s/.test(t)) { var ms = { name: nameOf(t.slice(8)), description: desc, displayFolder: '' }; table.measures.push(ms); ctx = { kind: 'meas', o: ms }; }
+          else if (/^(hierarchy|partition|calculationGroup|annotation|extendedProperty|lineageTag|changedProperty|calculationItem)\b/.test(t)) ctx = { kind: 'other' };
+          else {
+            ctx = { kind: 'table', o: table };
+            if (/^isHidden\b/.test(t) && !/false/i.test(t)) table.hidden = true;
+            var dc = t.match(/^dataCategory\s*:\s*(.*)$/); if (dc) table.dataCategory = dc[1].trim();
+            var dd = t.match(/^description\s*:\s*(.*)$/); if (dd) table.description = dd[1].trim();
+          }
+          return;
+        }
+        if (ind === 2 && ctx && ctx.o) {
+          if (/^isHidden\b/.test(t) && !/false/i.test(t)) ctx.o.hidden = true;
+          var df = t.match(/^displayFolder\s*:\s*(.*)$/); if (df && ctx.kind === 'meas') ctx.o.displayFolder = df[1].trim();
+          var d2 = t.match(/^description\s*:\s*(.*)$/); if (d2) ctx.o.description = d2[1].trim();
+        }
+      });
+    });
+    return model;
+  }
+
+  /* ---------- analysis ---------- */
+  function analyze(model) {
+    var F = [], gates = [];
+    function add(area, sev, obj, problem, fix) { F.push({ area: area, severity: sev, object: obj, problem: problem, fix: fix }); }
+    var autoTables = model.tables.filter(function (t) { return AUTO.test(t.name); }).length;
+    var real = model.tables.filter(function (t) { return !AUTO.test(t.name) && !t.hidden; });
+    var realNames = real.map(function (t) { return t.name; });
+    var visCols = [], meas = [];
+    real.forEach(function (t) {
+      t.columns.forEach(function (c) { if (!c.hidden && !/^RowNumber/.test(c.name)) visCols.push({ t: t.name, c: c }); });
+      t.measures.forEach(function (m) { meas.push({ t: t.name, m: m }); });
+    });
+    var dT = real.filter(function (t) { return !blank(t.description); }).length;
+    var dC = visCols.filter(function (x) { return !blank(x.c.description); }).length;
+    var dM = meas.filter(function (x) { return !blank(x.m.description); }).length;
+    var nT = real.length, nC = visCols.length, nM = meas.length, tot = nT + nC + nM;
+    var cov = tot ? (dT + dC + dM) / tot : 0;
+    var descPts = Math.round(25 * Math.min(1, cov / 0.8));
+    if (cov < 0.2) gates.push('Descriptions: only ' + Math.round(cov * 100) + '% of tables, visible columns and measures are described (at least 20% is needed).');
+    if (nM && dM < nM) add('Descriptions', 'High', 'Measures', dM + ' of ' + nM + ' measures have a description.', 'Define each KPI in business words: what it counts, filters, and period logic.');
+    if (nC && dC < nC) add('Descriptions', 'High', 'Columns', dC + ' of ' + nC + ' visible columns have a description.', 'Describe every visible column, including units and allowed values.');
+    if (nT && dT < nT) add('Descriptions', 'Medium', 'Tables', dT + ' of ' + nT + ' tables have a description.', 'Say what one row represents in each table.');
+
+    var linked = {}; model.rels.forEach(function (r) { linked[r.from] = 1; linked[r.to] = 1; });
+    var withMeas = {}; meas.forEach(function (x) { withMeas[x.t] = 1; });
+    var disconnected = realNames.length > 1 ? realNames.filter(function (n) { return !linked[n] && !withMeas[n]; }) : [];
+    var struct = 20;
+    if (realNames.length > 1 && model.rels.length === 0) { gates.push('Structure: the model has several tables but no relationships.'); struct -= 12; }
+    if (disconnected.length) { struct -= Math.min(8, 3 * disconnected.length); add('Structure', 'High', disconnected.join(', '), disconnected.length + ' table(s) have no relationship.', 'Relate them, or hide or remove them if they are only staging tables.'); }
+    var both = model.rels.filter(function (r) { return r.both; }).length, mm = model.rels.filter(function (r) { return r.mm; }).length;
+    if (both || mm) { struct -= 4; add('Structure', 'Medium', 'Relationships', both + ' bidirectional and ' + mm + ' many-to-many relationship(s).', 'Prefer single-direction one-to-many; ambiguous paths cause wrong AI answers.'); }
+    if (autoTables > 5) { struct -= 5; add('Structure', 'Medium', autoTables + ' auto date tables', 'Auto date/time created a hidden date table for each date column.', 'Turn off Auto date/time and use one marked date table.'); }
+    var hasDate = model.tables.some(function (t) { return !AUTO.test(t.name) && /time|date/i.test(t.dataCategory || ''); });
+    if (!hasDate) { struct -= 3; add('Structure', 'Low', 'Date table', 'No table is marked as a date table.', 'Create one calendar table and mark it as the date table.'); }
+    struct = Math.max(0, struct);
+
+    var helpers = visCols.filter(function (x) { return HELPER.test(x.c.name); });
+    var hid = helpers.length + disconnected.length, exp = 15;
+    if (hid) {
+      exp = Math.max(0, 15 - Math.min(15, hid));
+      var nm = helpers.slice(0, 8).map(function (x) { return x.t + '[' + x.c.name + ']'; });
+      add('Exposure', 'High', disconnected.concat(nm).join(', ') + (helpers.length > 8 ? ', ...' : ''), hid + ' staging table(s) or helper column(s) look like plumbing but are visible.', 'Hide them so the AI only sees business fields.');
+    }
+    if (nC > 150) { exp = Math.max(0, exp - 4); add('Exposure', 'Medium', 'Model size', nC + ' visible columns is large for an AI to reason over.', 'Hide unused columns or split into focused models.'); }
+
+    var issues = [];
+    visCols.forEach(function (x) { issues.push(['Column', x.t, x.c.name]); });
+    meas.forEach(function (x) { issues.push(['Measure', x.t, x.m.name]); });
+    real.forEach(function (t) { issues.push(['Table', t.name, t.name]); });
+    var bad = [];
+    issues.forEach(function (i) {
+      var n = String(i[2]), why = [];
+      if (n !== n.trim() || /  /.test(n)) why.push('extra spaces');
+      if (/(^|[\s-])copy\b/i.test(n)) why.push('looks like a copy');
+      if (/\w2$|%2$/.test(n)) why.push('ends in a number (duplicate?)');
+      if (BADPFX.test(n) || /[a-z]_[a-z]/.test(n)) why.push('technical naming');
+      if (why.length) bad.push([i[0], i[1], n, why.join('; ')]);
+    });
+    var dup = [];
+    for (var a = 0; a < meas.length; a++) for (var b = a + 1; b < meas.length; b++) {
+      var x1 = meas[a].m.name, x2 = meas[b].m.name;
+      if (Math.min(x1.length, x2.length) >= 6 && sim(x1, x2) >= 0.88) dup.push([x1, x2]);
+    }
+    var naming = Math.max(0, 15 - Math.min(15, bad.length) - Math.min(5, 2 * dup.length));
+    dup.forEach(function (d) { add('Naming', 'High', 'Measures \u2018' + d[0] + '\u2019 and \u2018' + d[1] + '\u2019', 'Near-duplicate measure names.', 'Keep one and delete or clearly distinguish the other.'); });
+    bad.slice(0, 15).forEach(function (i) { add('Naming', 'Medium', i[0] + ' ' + (i[0] === 'Table' ? '' : i[1] + ' / ') + '\u2018' + i[2] + '\u2019', i[3].charAt(0).toUpperCase() + i[3].slice(1) + '.', 'Rename to a clear business name.'); });
+    if (bad.length > 15) add('Naming', 'Medium', 'More names', (bad.length - 15) + ' more names have similar problems.', 'Apply the same clean-up to them.');
+
+    var logic = 10;
+    if (nM === 0) { gates.push('Business logic: the model has no explicit measures.'); logic = 0; }
+    else {
+      var nofolder = meas.filter(function (x) { return blank(x.m.displayFolder); }).length;
+      if (nM > 10 && nofolder === nM) { logic -= 3; add('Business logic', 'Low', 'Measures', 'None of ' + nM + ' measures are in a display folder.', 'Group measures into folders (for example Progress, Risk).'); }
+      if (dup.length) logic -= 3;
+    }
+
+    var ai = 0;
+    if (model.authoredSyn) ai += 5; else add('AI artifacts', 'Medium', 'Synonyms', 'No authored synonyms found (only auto-generated terms, or none).', 'Add synonyms for key tables, columns and measures (for example KT = Knowledge Transfer).');
+    if (model.aiArtifacts) ai += 5; else add('AI artifacts', 'Medium', 'AI instructions / verified answers', 'None found in the uploaded files (settings kept only in the service are not visible).', 'Add AI instructions and verified answers in Prep data for AI.');
+
+    var gov = model.roles > 0 ? 5 : 2;
+    if (!model.roles) add('Governance', 'Info', 'Row-level security', 'No RLS roles found. Fine for non-sensitive data.', 'Add RLS if the model holds restricted data. The sensitivity label is not stored in the model files.');
+
+    var score = descPts + struct + exp + naming + logic + ai + gov;
+    var verdict = gates.length ? 'Not AI ready' : score >= 80 ? 'AI ready' : score >= 60 ? 'Ready with caveats' : 'Not AI ready';
+    var order = { High: 0, Medium: 1, Low: 2, Info: 3 };
+    F.sort(function (p, q) { return order[p.severity] - order[q.severity]; });
+    return {
+      verdict: verdict, score: score, gates: gates, findings: F,
+      areas: [['Descriptions', descPts, 25], ['Structure', struct, 20], ['Exposure of helper fields', exp, 15], ['Naming', naming, 15], ['Business logic', logic, 10], ['Synonyms and AI artifacts', ai, 10], ['Governance', gov, 5]],
+      counts: { tables: nT, columns: nC, measures: nM, relationships: model.rels.length, autoTables: autoTables, dT: dT, dC: dC, dM: dM }
+    };
+  }
+
+  function toMarkdown(r) {
+    var L = ['# AI-readiness: ' + r.verdict + ' (' + r.score + '/100)', ''];
+    if (r.gates.length) { L.push('Hard gate failures:'); r.gates.forEach(function (g) { L.push('- ' + g); }); L.push(''); }
+    r.areas.forEach(function (a) { L.push('- ' + a[0] + ': ' + a[1] + '/' + a[2]); });
+    L.push('', 'Findings:');
+    r.findings.forEach(function (f) { L.push('- [' + f.severity + '] ' + f.area + ' | ' + f.object + ': ' + f.problem + ' Fix: ' + f.fix); });
+    return L.join('\n');
+  }
+
+  root.AIR = { fromBim: fromBim, fromTmdl: fromTmdl, analyze: analyze, toMarkdown: toMarkdown };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function () {
+  var A = window.AIR;
+  var out = document.getElementById('result'), msg = document.getElementById('msg'), drop = document.getElementById('drop');
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function say(t) { if (t) { msg.textContent = t; msg.hidden = false; } else { msg.hidden = true; msg.textContent = ''; } }
+
+  var SAMPLE = { model: { tables: [
+    { name: 'Sales', columns: [{ name: 'amt_usd' }, { name: 'fk_cust_id' }, { name: 'Index' }, { name: 'Order Date', description: 'Date the order was placed' }], measures: [{ name: 'Sales' }, { name: 'Sales 2' }, { name: 'Net Sales', description: 'Sales after discounts and returns' }] },
+    { name: 'Customers', description: 'One row per customer', columns: [{ name: 'Customer Name', description: 'Full legal name' }, { name: 'Region' }] },
+    { name: 'stg_Raw', columns: [{ name: 'col1' }, { name: 'col2' }] }
+  ], relationships: [{ fromTable: 'Sales', toTable: 'Customers' }] } };
+
+  function walk(entry, path, acc) {
+    return new Promise(function (resolve) {
+      if (entry.isFile) { entry.file(function (f) { acc.push({ path: path + f.name, file: f }); resolve(); }, function () { resolve(); }); }
+      else if (entry.isDirectory) {
+        var rd = entry.createReader(), all = [];
+        (function more() { rd.readEntries(function (es) {
+          if (!es.length) { Promise.all(all.map(function (e) { return walk(e, path + entry.name + '/', acc); })).then(resolve); }
+          else { all = all.concat([].slice.call(es)); more(); }
+        }, function () { resolve(); }); })();
+      } else resolve();
+    });
+  }
+
+  function handle(items) {
+    say('');
+    var jobs = items.map(function (it) {
+      var p = it.path, f = it.file;
+      if (/\.(tmdl|bim|json)$/i.test(p) && f.size < 30e6) return f.text().then(function (t) { return { path: p, text: t }; });
+      return Promise.resolve({ path: p, text: '', skip: true });
+    });
+    Promise.all(jobs).then(function (fs) {
+      var model = null;
+      var bim = fs.filter(function (f) { return /\.(bim|json)$/i.test(f.path) && f.text; });
+      for (var i = 0; i < bim.length && !model; i++) {
+        try { var j = JSON.parse(bim[i].text); if ((j.model && j.model.tables) || j.tables) model = A.fromBim(j); } catch (e) {}
+      }
+      if (!model) {
+        var tm = fs.filter(function (f) { return /\.tmdl$/i.test(f.path) || /copilot|verified/i.test(f.path); });
+        if (fs.some(function (f) { return /\.tmdl$/i.test(f.path); })) model = A.fromTmdl(tm);
+      }
+      if (!model || !model.tables.length) {
+        if (fs.some(function (f) { return /\.pbix$/i.test(f.path); })) say('A .pbix file can\u2019t be opened in a browser. Save it as a Power BI Project (.pbip) and upload the .SemanticModel folder, or upload the .pbix in Claude chat.');
+        else say('No model found. Upload a model.bim file or a folder with .tmdl files (the definition folder of a .SemanticModel).');
+        return;
+      }
+      render(A.analyze(model));
+    }).catch(function () { say('Could not read those files. Try again with the project folder or a model.bim file.'); });
+  }
+
+  function fromInput(input) { return [].slice.call(input.files).map(function (f) { return { path: f.webkitRelativePath || f.name, file: f }; }); }
+  document.getElementById('pickFolder').onclick = function () { document.getElementById('folderIn').click(); };
+  document.getElementById('pickFiles').onclick = function () { document.getElementById('filesIn').click(); };
+  document.getElementById('folderIn').onchange = function (e) { handle(fromInput(e.target)); e.target.value = ''; };
+  document.getElementById('filesIn').onchange = function (e) { handle(fromInput(e.target)); e.target.value = ''; };
+  document.getElementById('sample').onclick = function () { say(''); render(A.analyze(A.fromBim(SAMPLE))); };
+  document.getElementById('pickPbix').onclick = function () { document.getElementById('pbixIn').click(); };
+  document.getElementById('pbixIn').onchange = function (e) {
+    var n = e.target.files && e.target.files[0] ? e.target.files[0].name : 'That file';
+    out.replaceChildren();
+    say(n + ' can\u2019t be read inside a browser, so it was not checked. To rate it, either upload the .pbix in Claude chat and ask for an AI-readiness rating, or in Power BI Desktop use File, then Save as, then Power BI Project (.pbip), and choose that project folder here.');
+    e.target.value = '';
+  };
+  ['dragenter', 'dragover'].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (e) {
+    var items = e.dataTransfer && e.dataTransfer.items, acc = [];
+    if (items && items.length && items[0].webkitGetAsEntry) {
+      var entries = [].slice.call(items).map(function (i) { return i.webkitGetAsEntry(); }).filter(Boolean);
+      Promise.all(entries.map(function (en) { return walk(en, '', acc); })).then(function () { handle(acc); });
+    } else if (e.dataTransfer && e.dataTransfer.files) {
+      handle([].slice.call(e.dataTransfer.files).map(function (f) { return { path: f.name, file: f }; }));
+    }
+  });
+
+  function colorFor(r) { return r >= 0.8 ? 'var(--good)' : r >= 0.4 ? 'var(--warn)' : 'var(--bad)'; }
+
+  function render(r) {
+    out.replaceChildren();
+    var cert = el('section', 'cert'); cert.tabIndex = -1;
+    var cls = r.verdict === 'AI ready' ? 'ok' : r.verdict === 'Ready with caveats' ? 'warn' : 'bad';
+    var h = el('h2', 'verdict ' + cls, r.verdict); cert.appendChild(h);
+    var sc = el('p', 'score'); sc.appendChild(el('span', 'n', String(r.score))); sc.appendChild(document.createTextNode(' out of 100')); cert.appendChild(sc);
+    var g = el('div', 'gauge'); g.setAttribute('role', 'img'); g.setAttribute('aria-label', 'Score ' + r.score + ' out of 100. 60 is ready with caveats, 80 is AI ready.');
+    var fill = el('div', 'fill'); fill.style.width = r.score + '%'; g.appendChild(fill);
+    [[60, 'Ready with caveats'], [80, 'AI ready']].forEach(function (t) { var k = el('div', 'tick'); k.style.left = t[0] + '%'; k.appendChild(el('span', null, t[0] + ' ' + t[1])); g.appendChild(k); });
+    cert.appendChild(g);
+    if (r.gates.length) {
+      var gt = el('div', 'gates'); gt.appendChild(el('strong', null, 'Hard gate failures. The model cannot be AI ready until these are fixed.'));
+      var ul = el('ul'); r.gates.forEach(function (x) { ul.appendChild(el('li', null, x)); }); gt.appendChild(ul); cert.appendChild(gt);
+    }
+    cert.appendChild(el('h3', null, 'Score by area'));
+    var al = el('ul', 'areas');
+    r.areas.forEach(function (a) {
+      var li = el('li'); li.appendChild(el('span', null, a[0]));
+      var bar = el('div', 'bar'), i = el('i'); i.style.width = (100 * a[1] / a[2]) + '%'; i.style.background = colorFor(a[1] / a[2]); bar.appendChild(i); li.appendChild(bar);
+      li.appendChild(el('span', 'pts', a[1] + ' / ' + a[2])); al.appendChild(li);
+    });
+    cert.appendChild(al);
+    var c = r.counts;
+    cert.appendChild(el('p', 'counts', 'Scanned ' + c.tables + ' tables, ' + c.columns + ' visible columns, ' + c.measures + ' measures and ' + c.relationships + ' relationships. Descriptions: ' + c.dT + ' of ' + c.tables + ' tables, ' + c.dC + ' of ' + c.columns + ' columns, ' + c.dM + ' of ' + c.measures + ' measures. Auto date tables: ' + c.autoTables + '.'));
+
+    cert.appendChild(el('h3', null, 'What to fix, most important first'));
+    var fl = el('div', 'filters'), body = el('tbody'), shown = 'All';
+    function fillRows() {
+      body.replaceChildren();
+      r.findings.filter(function (f) { return shown === 'All' || f.severity === shown; }).forEach(function (f) {
+        var tr = el('tr'); tr.appendChild(el('td', 'sev ' + f.severity, f.severity)); tr.appendChild(el('td', null, f.area)); tr.appendChild(el('td', null, f.object)); tr.appendChild(el('td', null, f.problem)); tr.appendChild(el('td', null, f.fix)); body.appendChild(tr);
+      });
+      if (!body.children.length) { var tr0 = el('tr'), td0 = el('td', null, 'No findings at this level.'); td0.colSpan = 5; tr0.appendChild(td0); body.appendChild(tr0); }
+    }
+    ['All', 'High', 'Medium', 'Low', 'Info'].forEach(function (lvl) {
+      var n = lvl === 'All' ? r.findings.length : r.findings.filter(function (f) { return f.severity === lvl; }).length;
+      if (lvl !== 'All' && !n) return;
+      var b = el('button', null, lvl + ' (' + n + ')'); b.type = 'button'; b.setAttribute('aria-pressed', lvl === 'All' ? 'true' : 'false');
+      b.onclick = function () { shown = lvl; [].slice.call(fl.children).forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); fillRows(); };
+      fl.appendChild(b);
+    });
+    cert.appendChild(fl);
+    var sw = el('div', 'scroll'), tb = el('table'), th = el('thead'), htr = el('tr');
+    ['Level', 'Area', 'Where', 'Problem', 'Fix'].forEach(function (x) { htr.appendChild(el('th', null, x)); });
+    th.appendChild(htr); tb.appendChild(th); tb.appendChild(body); sw.appendChild(tb); cert.appendChild(sw); fillRows();
+
+    var act = el('div', 'row'); act.style.marginTop = '20px';
+    var ta = el('textarea'); ta.readOnly = true; ta.value = A.toMarkdown(r); ta.hidden = true; ta.setAttribute('aria-label', 'Report as text');
+    var show = el('button', null, 'Show report as text'); show.type = 'button';
+    show.onclick = function () { ta.hidden = !ta.hidden; show.textContent = ta.hidden ? 'Show report as text' : 'Hide report text'; if (!ta.hidden) { ta.focus(); ta.select(); } };
+    var cp = el('button', null, 'Copy report'); cp.type = 'button';
+    cp.onclick = function () {
+      function flash(t) { cp.textContent = t; setTimeout(function () { cp.textContent = 'Copy report'; }, 1800); }
+      try { navigator.clipboard.writeText(ta.value).then(function () { flash('Copied'); }, function () { ta.hidden = false; ta.focus(); ta.select(); flash('Select and copy'); }); }
+      catch (e) { ta.hidden = false; ta.focus(); ta.select(); flash('Select and copy'); }
+    };
+    act.appendChild(show); act.appendChild(cp); cert.appendChild(act); cert.appendChild(ta);
+    cert.appendChild(el('p', 'limits', 'This is a check of the model\u2019s metadata only. It does not run real questions or look at data values, and it cannot see AI instructions, verified answers or sensitivity labels that are set only in the Power BI service. Whether names and descriptions are meaningful still needs a human or Claude to judge.'));
+    out.appendChild(cert);
+    var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    cert.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' }); cert.focus({ preventScroll: true });
+  }
+})();
+</script>
+</body>
+</html>
